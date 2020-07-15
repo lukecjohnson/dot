@@ -1,0 +1,11 @@
+{
+  "name": "html-preprocessor",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "devDependencies": {
+    "typescript": "^3.9.6"
+  }
+}
