@@ -16,7 +16,14 @@ async function compileComponents(html: string): Promise<string> {
   for (const component of components) {
     const [tag, src, inner] = component;
 
-    let componentHTML = await fs.readFile(path.resolve(dir.components, src), { encoding: 'utf-8' });
+    let componentHTML = await fs.readFile(
+      path.resolve(
+        dir.components, 
+        path.extname(src) === '.html' ? src : `${src}.html`
+      ), 
+      { encoding: 'utf-8' }
+    );
+    
     if (inner) {
       componentHTML = componentHTML.replace(/<slot\s?\/>/, inner);
     }
