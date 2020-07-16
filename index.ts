@@ -1,12 +1,30 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
 
+const patterns = {
+  component: /<component src="([a-zA-Z0-9-_.\\\/]*)"\s?\/>/gm
+}
+
+async function compileComponents(html: string, root: string) {
+  const components = [...html.matchAll(patterns.component)];
+  
+  for (const component of components) {
+    const [tag, src] = component;
+    const componentHTML = await fs.readFile(path.resolve(root, src), { encoding: 'utf-8' });
+    const compiled = await compileComponents(componentHTML, path.resolve(root, path.parse(src).dir));
+    html = html.replace(tag, compiled);
+  }
+
+  return html;
+}
+
 async function compileEntry(entry: string, root: string, output: string): Promise<void> {
   const html = await fs.readFile(path.join(root, entry), { encoding: 'utf-8' });
 
-  await fs.mkdir(output, { recursive: true });
+  const compiled = await compileComponents(html, root);
 
-  await fs.writeFile(path.join(output, entry), html, 'utf-8');
+  await fs.mkdir(output, { recursive: true });
+  await fs.writeFile(path.join(output, entry), compiled, 'utf-8');
 }
 
 async function main(): Promise<void> {
