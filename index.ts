@@ -1,16 +1,20 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
 
-const patterns = {
-  component: /<component src="([a-zA-Z0-9-_.\\\/]*)"\s?\/>/gm
-}
-
 async function compileComponents(html: string, root: string) {
-  const components = [...html.matchAll(patterns.component)];
+  const components = [
+    ...html.matchAll(/<component src="([a-zA-Z0-9-_.\\\/]*)"\s?\/>/gm),
+    ...html.matchAll(/<component src="([a-zA-Z0-9-_.\\\/]*)">(.*?)<\/component>/gms)
+  ];
   
   for (const component of components) {
-    const [tag, src] = component;
-    const componentHTML = await fs.readFile(path.resolve(root, src), { encoding: 'utf-8' });
+    const [tag, src, inner] = component;
+
+    let componentHTML = await fs.readFile(path.resolve(root, src), { encoding: 'utf-8' });
+    if (inner) {
+      componentHTML = componentHTML.replace(/<slot\s?\/>/, inner);
+    }
+
     const compiled = await compileComponents(componentHTML, path.resolve(root, path.parse(src).dir));
     html = html.replace(tag, compiled);
   }
