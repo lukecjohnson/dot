@@ -2,8 +2,8 @@
   "name": "html-preprocessor",
   "version": "0.1.0",
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc --watch"
+    "start": "tsc --watch",
+    "build": "tsc"
   },
   "devDependencies": {
     "@types/node": "^14.0.23",
