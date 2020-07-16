@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
 
-async function compileComponents(html: string, root: string) {
+async function compileComponents(html: string, root: string): Promise<string> {
   const components = [
     ...html.matchAll(/<component src="([a-zA-Z0-9-_.\\\/]*)"\s?\/>/gm),
     ...html.matchAll(/<component src="([a-zA-Z0-9-_.\\\/]*)">(.*?)<\/component>/gms)
