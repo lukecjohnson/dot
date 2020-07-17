@@ -5,6 +5,20 @@ import * as arg from 'arg';
 
 import { version } from './package.json';
 
+const usage = `
+Usage:
+
+  project-name [options]
+
+Options:
+
+  -r, --root          Set root directory (Default: "./src")
+
+  -o, --output        Set output directory (Default: "./public")
+
+  -v, --version       Print the current version
+`;
+
 const dir = {
   root: path.join(process.cwd(), 'src'),
   output: path.join(process.cwd(), 'public'),
@@ -65,8 +79,10 @@ async function getViews(subDirectory: string = ''): Promise<string[]> {
 
   for (const file of files) {
     if ((await fs.stat(path.join(dir.views, subDirectory, file))).isDirectory()) {
-      const innerViews = (await getViews(path.join(subDirectory, file))).map(f => path.join(file, f));
-      views = [...views, ...innerViews];
+      views = [
+        ...views, 
+        ...(await getViews(path.join(subDirectory, file))).map(f => path.join(file, f))
+      ];
     } else {
       views = [...views, file];
     }
@@ -80,13 +96,20 @@ async function main(): Promise<void> {
     '--root': String,
     '--output': String,
     '--version': Boolean,
+    '--help': Boolean,
     '-r': '--root',
     '-o': '--output',
-    '-v': '--version'
+    '-v': '--version',
+    '-h': '--help'
   });
 
   if (args['--version']) {
     console.log(version);
+    return;
+  }
+
+  if (args['--help']) {
+    console.log(usage);
     return;
   }
 
