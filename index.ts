@@ -3,6 +3,8 @@ import * as path from 'path';
 
 import * as arg from 'arg';
 
+import { version } from './package.json';
+
 const dir = {
   root: path.join(process.cwd(), 'src'),
   output: path.join(process.cwd(), 'public'),
@@ -56,9 +58,16 @@ async function main(): Promise<void> {
   const args = arg({
     '--root': String,
     '--output': String,
+    '--version': Boolean,
     '-r': '--root',
-    '-o': '--output'
+    '-o': '--output',
+    '-v': '--version'
   });
+
+  if (args['--version']) {
+    console.log(version);
+    return;
+  }
 
   if (args['--root']) {
     dir.root = path.resolve(process.cwd(), args['--root']);
