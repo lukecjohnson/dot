@@ -35,8 +35,10 @@ async function compileComponents(html: string, type: 'collapsed' | 'expanded'): 
       componentHTML = componentHTML.replace(/<slot\s?\/>/, inner);
     }
 
-    componentHTML = await compileComponents(componentHTML, 'collapsed');
-    componentHTML = await compileComponents(componentHTML, 'expanded');
+    if (componentHTML.includes('<component')) {
+      componentHTML = await compileComponents(componentHTML, 'collapsed');
+      componentHTML = await compileComponents(componentHTML, 'expanded');
+    }
 
     html = html.replace(tag, componentHTML);
   }
@@ -47,8 +49,10 @@ async function compileComponents(html: string, type: 'collapsed' | 'expanded'): 
 async function compileView(view: string): Promise<void> {
   let html = await fs.readFile(path.join(dir.views, view), { encoding: 'utf-8' });
 
-  html = await compileComponents(html, 'collapsed');
-  html = await compileComponents(html, 'expanded');
+  if (html.includes('<component')) {
+    html = await compileComponents(html, 'collapsed');
+    html = await compileComponents(html, 'expanded');
+  }
 
   await fs.mkdir(dir.output, { recursive: true });
   await fs.writeFile(path.join(dir.output, view), html, 'utf-8');
