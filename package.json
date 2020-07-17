@@ -4,10 +4,13 @@
   "scripts": {
     "start": "tsc --watch",
     "build": "tsc",
-    "example": "cd example && node ../bin && cd .."
+    "example": "cd example && node ../bin --root ./example/src && cd .."
   },
   "devDependencies": {
     "@types/node": "^14.0.23",
     "typescript": "^3.9.6"
+  },
+  "dependencies": {
+    "arg": "^4.1.3"
   }
 }

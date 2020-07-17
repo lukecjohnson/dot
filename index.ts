@@ -1,10 +1,13 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
 
+import * as arg from 'arg';
+
 const dir = {
-  views: path.join(process.cwd(), 'src', 'views'),
-  components: path.join(process.cwd(), 'src', 'components'),
-  output: path.join(process.cwd(), 'public')
+  root: path.join(process.cwd(), 'src'),
+  output: path.join(process.cwd(), 'public'),
+  get views() { return path.join(this.root, 'views') },
+  get components() { return path.join(this.root, 'components') },
 };
 
 async function compileComponents(html: string, type: 'collapsed' | 'expanded'): Promise<string> {
@@ -50,6 +53,21 @@ async function compileView(view: string): Promise<void> {
 }
 
 async function main(): Promise<void> {
+  const args = arg({
+    '--root': String,
+    '--output': String,
+    '-r': '--root',
+    '-o': '--output'
+  });
+
+  if (args['--root']) {
+    dir.root = path.resolve(process.cwd(), args['--root']);
+  }
+
+  if (args['--output']) {
+    dir.output = path.resolve(process.cwd(), args['--output']);
+  }
+
   const views = (await fs.readdir(dir.views)).filter(f => path.extname(f) === '.html');
   for (const view of views) {
     await compileView(view);
