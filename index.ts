@@ -7,11 +7,13 @@ const dir = {
   output: path.join(process.cwd(), 'public')
 };
 
-async function compileComponents(html: string): Promise<string> {
-  const components = [
-    ...html.matchAll(/<component src="([a-zA-Z0-9-_.\\\/]*)"\s?\/>/gm),
-    ...html.matchAll(/<component src="([a-zA-Z0-9-_.\\\/]*)">(.*?)<\/component>/gms)
-  ];
+async function compileComponents(html: string, type: 'collapsed' | 'expanded'): Promise<string> {
+  const patterns = {
+    collapsed: /<component src="([a-zA-Z0-9-_.\\\/]*)"\s?\/>/gm,
+    expanded: /<component src="([a-zA-Z0-9-_.\\\/]*)">(.*?)<\/component>/gms
+  };
+
+  const components = html.matchAll(patterns[type]);
   
   for (const component of components) {
     const [tag, src, inner] = component;
@@ -28,20 +30,23 @@ async function compileComponents(html: string): Promise<string> {
       componentHTML = componentHTML.replace(/<slot\s?\/>/, inner);
     }
 
-    const compiled = await compileComponents(componentHTML);
-    html = html.replace(tag, compiled);
+    componentHTML = await compileComponents(componentHTML, 'collapsed');
+    componentHTML = await compileComponents(componentHTML, 'expanded');
+
+    html = html.replace(tag, componentHTML);
   }
 
   return html;
 }
 
 async function compileView(view: string): Promise<void> {
-  const html = await fs.readFile(path.join(dir.views, view), { encoding: 'utf-8' });
+  let html = await fs.readFile(path.join(dir.views, view), { encoding: 'utf-8' });
 
-  const compiled = await compileComponents(html);
+  html = await compileComponents(html, 'collapsed');
+  html = await compileComponents(html, 'expanded');
 
   await fs.mkdir(dir.output, { recursive: true });
-  await fs.writeFile(path.join(dir.output, view), compiled, 'utf-8');
+  await fs.writeFile(path.join(dir.output, view), html, 'utf-8');
 }
 
 async function main(): Promise<void> {
