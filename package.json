@@ -4,7 +4,7 @@
   "scripts": {
     "start": "tsc --watch",
     "build": "tsc",
-    "example": "cd example && node ../bin --root ./example/src && cd .."
+    "example": "node . --root ./example/src --output ./example/public"
   },
   "devDependencies": {
     "@types/node": "^14.0.23",
