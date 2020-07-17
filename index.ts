@@ -54,8 +54,25 @@ async function compileView(view: string): Promise<void> {
     html = await compileComponents(html, 'expanded');
   }
 
-  await fs.mkdir(dir.output, { recursive: true });
+  await fs.mkdir(path.join(dir.output, path.parse(view).dir), { recursive: true });
   await fs.writeFile(path.join(dir.output, view), html, 'utf-8');
+}
+
+async function getViews(subDirectory: string = ''): Promise<string[]> {
+  const files = await fs.readdir(path.join(dir.views, subDirectory));
+
+  let views: string[] = [];
+
+  for (const file of files) {
+    if ((await fs.stat(path.join(dir.views, subDirectory, file))).isDirectory()) {
+      const innerViews = (await getViews(path.join(subDirectory, file))).map(f => path.join(file, f));
+      views = [...views, ...innerViews];
+    } else {
+      views = [...views, file];
+    }
+  }
+
+  return views;
 }
 
 async function main(): Promise<void> {
@@ -81,7 +98,7 @@ async function main(): Promise<void> {
     dir.output = path.resolve(process.cwd(), args['--output']);
   }
 
-  const views = (await fs.readdir(dir.views)).filter(f => path.extname(f) === '.html');
+  const views = await getViews();
   for (const view of views) {
     await compileView(view);
   }
