@@ -26,6 +26,10 @@ const dir = {
   get components() { return path.join(this.root, 'components') },
 };
 
+function normalize(html: string): string {
+  return html.replace(/^\s+|\s+$/g, '');
+}
+
 async function compileComponents(html: string): Promise<string> {
   const components = [
     ...html.matchAll(/<component src="([a-zA-Z0-9-_.\/]*)"\s?\/>/gm),
@@ -44,10 +48,10 @@ async function compileComponents(html: string): Promise<string> {
     );
     
     if (inner) {
-      componentHTML = componentHTML.replace(/<slot\s?\/>/, inner);
+      componentHTML = componentHTML.replace(/<slot\s?\/>/, normalize(inner));
     }
 
-    html = html.replace(tag, componentHTML);
+    html = html.replace(tag, normalize(componentHTML));
   }
 
   if (html.includes('<component')) {
