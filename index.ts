@@ -26,13 +26,11 @@ const dir = {
   get components() { return path.join(this.root, 'components') },
 };
 
-async function compileComponents(html: string, type: 'collapsed' | 'expanded'): Promise<string> {
-  const patterns = {
-    collapsed: /<component src="([a-zA-Z0-9-_.\\\/]*)"\s?\/>/gm,
-    expanded: /<component src="([a-zA-Z0-9-_.\\\/]*)">(.*?)<\/component>/gms
-  };
-
-  const components = html.matchAll(patterns[type]);
+async function compileComponents(html: string): Promise<string> {
+  const components = [
+    ...html.matchAll(/<component src="([a-zA-Z0-9-_.\/]*)"\s?\/>/gm),
+    ...html.matchAll(/<component src="([a-zA-Z0-9-_.\/]*)">(?!.*<component)(.*?)<\/component>/gms),
+  ];
   
   for (const component of components) {
     const [tag, src, inner] = component;
@@ -49,12 +47,11 @@ async function compileComponents(html: string, type: 'collapsed' | 'expanded'): 
       componentHTML = componentHTML.replace(/<slot\s?\/>/, inner);
     }
 
-    if (componentHTML.includes('<component')) {
-      componentHTML = await compileComponents(componentHTML, 'collapsed');
-      componentHTML = await compileComponents(componentHTML, 'expanded');
-    }
-
     html = html.replace(tag, componentHTML);
+  }
+
+  if (html.includes('<component')) {
+    html = await compileComponents(html); 
   }
 
   return html;
@@ -64,8 +61,7 @@ async function compileView(view: string): Promise<void> {
   let html = await fs.readFile(path.join(dir.views, view), { encoding: 'utf-8' });
 
   if (html.includes('<component')) {
-    html = await compileComponents(html, 'collapsed');
-    html = await compileComponents(html, 'expanded');
+    html = await compileComponents(html);
   }
 
   await fs.mkdir(path.join(dir.output, path.parse(view).dir), { recursive: true });
