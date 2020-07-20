@@ -30,14 +30,51 @@ function normalize(html: string): string {
   return html.replace(/^\s+|\s+$/g, '');
 }
 
+function hasComponents(html: string): boolean {
+  return (
+    (/<component((?:\s+[a-zA-Z_:][a-zA-Z0-9_:.-]*="[^"]*")+)\s*\/>/gm).test(html) ||
+    (/<component((?:\s+[a-zA-Z_:][a-zA-Z0-9_:.-]*="[^"]*")+)>(?!.*<component)(.*?)<\/component>/gms).test(html)
+  );
+}
+
+type ComponentAttributes = {
+  src: string | null;
+  props: {
+    key: string;
+    value: string;
+  }[];
+}
+
+function parseComponentAttributes(attributeString: string): ComponentAttributes {
+  const attributes = [...attributeString.matchAll(/([a-z-]+)="(.*?)"/gms)];
+
+  return {
+    src: attributes.find(attr => attr[1] === 'src')?.[2] ?? null,
+    props: attributes
+      .filter(attr => attr[1] !== 'src')
+      .map((attr) => {
+        return {
+          key: attr[1],
+          value: normalize(attr[2])
+        }
+      })
+  };
+}
+
 async function compileComponents(html: string): Promise<string> {
   const components = [
-    ...html.matchAll(/<component src="([a-zA-Z0-9-_.\/]*)"\s?\/>/gm),
-    ...html.matchAll(/<component src="([a-zA-Z0-9-_.\/]*)">(?!.*<component)(.*?)<\/component>/gms),
+    ...html.matchAll(/<component((?:\s+[a-zA-Z_:][a-zA-Z0-9_:.-]*="[^"]*")+)\s*\/>/gm),
+    ...html.matchAll(/<component((?:\s+[a-zA-Z_:][a-zA-Z0-9_:.-]*="[^"]*")+)>(?!.*<component)(.*?)<\/component>/gms)
   ];
-  
+
   for (const component of components) {
-    const [tag, src, inner] = component;
+    const [ outer, attributes, inner ] = component;
+
+    const { src, props } = parseComponentAttributes(attributes);
+
+    if (!src) {
+      throw new Error('component is missing "src" attribute');
+    }
 
     let componentHTML = await fs.readFile(
       path.resolve(
@@ -46,15 +83,19 @@ async function compileComponents(html: string): Promise<string> {
       ), 
       { encoding: 'utf-8' }
     );
+
+    for (const prop of props) {
+      componentHTML = componentHTML.replace(new RegExp(`{{\\s?${prop.key}\\s?}}`, 'g'), prop.value);
+    }
     
     if (inner) {
       componentHTML = componentHTML.replace(/<slot\s?\/>/, normalize(inner));
     }
 
-    html = html.replace(tag, normalize(componentHTML));
+    html = html.replace(outer, normalize(componentHTML));
   }
 
-  if (html.includes('<component')) {
+  if (hasComponents(html)) {
     html = await compileComponents(html); 
   }
 
@@ -64,7 +105,7 @@ async function compileComponents(html: string): Promise<string> {
 async function compileView(view: string): Promise<void> {
   let html = await fs.readFile(path.join(dir.views, view), { encoding: 'utf-8' });
 
-  if (html.includes('<component')) {
+  if (hasComponents(html)) {
     html = await compileComponents(html);
   }
 
