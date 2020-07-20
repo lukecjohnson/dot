@@ -32,49 +32,32 @@ function normalize(html: string): string {
 
 function hasComponents(html: string): boolean {
   return (
-    (/<component((?:\s+[a-zA-Z_:][a-zA-Z0-9_:.-]*="[^"]*")+)\s*\/>/gm).test(html) ||
-    (/<component((?:\s+[a-zA-Z_:][a-zA-Z0-9_:.-]*="[^"]*")+)>(?!.*<component)(.*?)<\/component>/gms).test(html)
+    (/<component\s+src="([a-zA-Z0-9-_.\/]*)"((?:\s+[a-zA-Z_:][a-zA-Z0-9_:.-]*="[^"]*")*)\s*\/>/gm).test(html) ||
+    (/<component\s+src="([a-zA-Z0-9-_.\/]*)"((?:\s+[a-zA-Z_:][a-zA-Z0-9_:.-]*="[^"]*")+)>(?!.*<component)(.*?)<\/component>/gms).test(html)
   );
 }
 
-type ComponentAttributes = {
-  src: string | null;
-  props: {
-    key: string;
-    value: string;
-  }[];
-}
+function parseComponentProps(rawProps: string): { key: string; value: string }[] {
+  const props = [...rawProps.matchAll(/([a-zA-Z_:][a-zA-Z0-9_:.-]*)="([^"]*)"/gm)];
 
-function parseComponentAttributes(attributeString: string): ComponentAttributes {
-  const attributes = [...attributeString.matchAll(/([a-z-]+)="(.*?)"/gms)];
-
-  return {
-    src: attributes.find(attr => attr[1] === 'src')?.[2] ?? null,
-    props: attributes
-      .filter(attr => attr[1] !== 'src')
-      .map((attr) => {
-        return {
-          key: attr[1],
-          value: normalize(attr[2])
-        }
-      })
-  };
+  return props.map((prop) => {
+    return {
+      key: prop[1],
+      value: normalize(prop[2])
+    }
+  });
 }
 
 async function compileComponents(html: string): Promise<string> {
   const components = [
-    ...html.matchAll(/<component((?:\s+[a-zA-Z_:][a-zA-Z0-9_:.-]*="[^"]*")+)\s*\/>/gm),
-    ...html.matchAll(/<component((?:\s+[a-zA-Z_:][a-zA-Z0-9_:.-]*="[^"]*")+)>(?!.*<component)(.*?)<\/component>/gms)
+    ...html.matchAll(/<component\s+src="([a-zA-Z0-9-_.\/]*)"((?:\s+[a-zA-Z_:][a-zA-Z0-9_:.-]*="[^"]*")*)\s*\/>/gm),
+    ...html.matchAll(/<component\s+src="([a-zA-Z0-9-_.\/]*)"((?:\s+[a-zA-Z_:][a-zA-Z0-9_:.-]*="[^"]*")+)>(?!.*<component)(.*?)<\/component>/gms)
   ];
 
   for (const component of components) {
-    const [ outer, attributes, inner ] = component;
+    const [ outer, src, rawProps, inner ] = component;
 
-    const { src, props } = parseComponentAttributes(attributes);
-
-    if (!src) {
-      throw new Error('component is missing "src" attribute');
-    }
+    const props = parseComponentProps(rawProps);
 
     let componentHTML = await fs.readFile(
       path.resolve(
@@ -146,12 +129,12 @@ async function main(): Promise<void> {
 
   if (args['--version']) {
     console.log(version);
-    return;
+    process.exit(0);
   }
 
   if (args['--help']) {
     console.log(usage);
-    return;
+    process.exit(0);
   }
 
   if (args['--root']) {
