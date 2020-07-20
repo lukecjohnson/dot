@@ -32,13 +32,13 @@ function normalize(html: string): string {
 
 function hasComponents(html: string): boolean {
   return (
-    (/<component\s+src="([a-zA-Z0-9-_.\/]*)"((?:\s+[a-zA-Z_:][a-zA-Z0-9_:.-]*="[^"]*")*)\s*\/>/gm).test(html) ||
-    (/<component\s+src="([a-zA-Z0-9-_.\/]*)"((?:\s+[a-zA-Z_:][a-zA-Z0-9_:.-]*="[^"]*")+)>(?!.*<component)(.*?)<\/component>/gms).test(html)
+    (/<component\s+src="([^"]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)\s*\/>/gm).test(html) ||
+    (/<component\s+src="([^"]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)>(?!.*<component)(.*?)<\/component>/gms).test(html)
   );
 }
 
 function parseComponentProps(rawProps: string): { key: string; value: string }[] {
-  const props = [...rawProps.matchAll(/([a-zA-Z_:][a-zA-Z0-9_:.-]*)="([^"]*)"/gm)];
+  const props = [...rawProps.matchAll(/([a-z][a-z0-9-]*)="([^"]*)"/gm)];
 
   return props.map((prop) => {
     return {
@@ -50,8 +50,8 @@ function parseComponentProps(rawProps: string): { key: string; value: string }[]
 
 async function compileComponents(html: string): Promise<string> {
   const components = [
-    ...html.matchAll(/<component\s+src="([a-zA-Z0-9-_.\/]*)"((?:\s+[a-zA-Z_:][a-zA-Z0-9_:.-]*="[^"]*")*)\s*\/>/gm),
-    ...html.matchAll(/<component\s+src="([a-zA-Z0-9-_.\/]*)"((?:\s+[a-zA-Z_:][a-zA-Z0-9_:.-]*="[^"]*")+)>(?!.*<component)(.*?)<\/component>/gms)
+    ...html.matchAll(/<component\s+src="([^"]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)\s*\/>/gm),
+    ...html.matchAll(/<component\s+src="([^"]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)>(?!.*<component)(.*?)<\/component>/gms)
   ];
 
   for (const component of components) {
