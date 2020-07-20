@@ -151,4 +151,10 @@ async function main(): Promise<void> {
   }
 } 
 
-main();
+main()
+  .then(() => {
+    console.log('\n\x1b[1;32m•\x1b[0m Compiled successfully\n');
+  })
+  .catch((error) => {
+    console.log(`\n\x1b[1;31m•\x1b[0m Error: ${error.message}\n`);
+  })
