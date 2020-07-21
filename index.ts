@@ -12,9 +12,9 @@ Usage:
 
 Options:
 
-  -r, --root          Set root directory (Default: "./src")
+  -r, --root          Set root directory where "/views" and "/components" can be found (Default: "./src")
 
-  -o, --output        Set output directory (Default: "./public")
+  -o, --output        Set output directory for compiled views (Default: "./public")
 
   -v, --version       Print the current version
 `;
@@ -59,13 +59,23 @@ async function compileComponents(html: string): Promise<string> {
 
     const props = parseComponentProps(rawProps);
 
-    let componentHTML = await fs.readFile(
-      path.resolve(
-        dir.components, 
-        path.extname(src) === '.html' ? src : `${src}.html`
-      ), 
-      { encoding: 'utf-8' }
-    );
+    let componentHTML: string;
+
+    try {
+     componentHTML = await fs.readFile(
+        path.resolve(
+          dir.components,
+          path.extname(src) === '.html' ? src : `${src}.html`
+        ),
+        { encoding: 'utf-8' }
+      );
+    } catch(error) {
+      if (error.code === 'ENOENT') {
+        throw new Error(`Could not find component "${src}" - please ensure it exists in the components directory`);
+      } else {
+        throw new Error(`Failed to read HTML file for component "${src}"`);
+      }
+    }
 
     for (const prop of props) {
       componentHTML = componentHTML.replace(new RegExp(`{{\\s?${prop.key}\\s?}}`, 'g'), prop.value);
@@ -86,18 +96,47 @@ async function compileComponents(html: string): Promise<string> {
 }
 
 async function compileView(view: string): Promise<void> {
-  let html = await fs.readFile(path.join(dir.views, view), { encoding: 'utf-8' });
+  let html: string;
+
+  try {
+    html = await fs.readFile(path.join(dir.views, view), { encoding: 'utf-8' });
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      throw new Error(`Could not find view "${view}" - please ensure it exists in the views directory`);
+    } else {
+      throw new Error(`Failed to read HTML file for view "${view}"`);
+    }
+  }
 
   if (hasComponents(html)) {
     html = await compileComponents(html);
   }
 
-  await fs.mkdir(path.join(dir.output, path.parse(view).dir), { recursive: true });
-  await fs.writeFile(path.join(dir.output, view), html, 'utf-8');
+  try {
+    await fs.mkdir(path.join(dir.output, path.parse(view).dir), { recursive: true });
+  } catch {
+    throw new Error('Failed to create output directory');
+  }
+
+  try {
+    await fs.writeFile(path.join(dir.output, view), html, 'utf-8');
+  } catch {
+    throw new Error(`Failed to write compiled HTML file for view "${view}"`)
+  }
 }
 
 async function getViews(subDirectory: string = ''): Promise<string[]> {
-  const files = await fs.readdir(path.join(dir.views, subDirectory));
+  let files: string[];
+
+  try {
+    files = await fs.readdir(path.join(dir.views, subDirectory));
+  } catch(error) {
+    if (error.code === 'ENOENT') {
+      throw new Error('Could not find the views directory');
+    } else {
+      throw new Error('Failed to read the views directory');
+    }
+  }
 
   let views: string[] = [];
 
