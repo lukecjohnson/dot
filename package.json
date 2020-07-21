@@ -1,6 +1,9 @@
 {
   "name": "html-preprocessor",
   "version": "0.1.0",
+  "bin": {
+    "dot": "./index.js"
+  },
   "scripts": {
     "start": "tsc --watch",
     "build": "tsc",
