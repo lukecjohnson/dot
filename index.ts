@@ -14,15 +14,15 @@ Usage:
 
 Options:
 
-  -r, --root          Set root directory where "/views" and "/components" can be found (Default: "./src")
+  -r, --root          Set root directory where "/views" and "/components" can be found
 
-  -o, --output        Set output directory for compiled views (Default: "./public")
+  -o, --output        Set output directory for compiled views
 
   -v, --version       Print the current version
 `;
 
 const dir = {
-  root: path.join(process.cwd(), 'src'),
+  root: path.join(process.cwd()),
   output: path.join(process.cwd(), 'public'),
   get views() { return path.join(this.root, 'views') },
   get components() { return path.join(this.root, 'components') },
