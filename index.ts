@@ -28,15 +28,18 @@ const dir = {
   get components() { return path.join(this.root, 'components') },
 };
 
+const patterns = {
+  whitespace: /^\s+|\s+$/g,
+  component: /<component\s+src="([^"]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)(?:\s*\/>|>(?!.*<component)(.*?)<\/component>)/gms,
+  slot: /<slot\s?\/>/,
+};
+
 function normalize(html: string): string {
-  return html.replace(/^\s+|\s+$/g, '');
+  return html.replace(new RegExp(patterns.whitespace), '');
 }
 
 function hasComponents(html: string): boolean {
-  return (
-    (/<component\s+src="([^"]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)\s*\/>/gm).test(html) ||
-    (/<component\s+src="([^"]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)>(?!.*<component)(.*?)<\/component>/gms).test(html)
-  );
+  return new RegExp(patterns.component).test(html);
 }
 
 function parseComponentProps(rawProps: string): { key: string; value: string }[] {
@@ -51,10 +54,7 @@ function parseComponentProps(rawProps: string): { key: string; value: string }[]
 }
 
 async function compileComponents(html: string): Promise<string> {
-  const components = [
-    ...html.matchAll(/<component\s+src="([^"]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)\s*\/>/gm),
-    ...html.matchAll(/<component\s+src="([^"]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)>(?!.*<component)(.*?)<\/component>/gms)
-  ];
+  const components = html.matchAll(new RegExp(patterns.component));
 
   for (const component of components) {
     const [ outer, src, rawProps, inner ] = component;
@@ -84,7 +84,7 @@ async function compileComponents(html: string): Promise<string> {
     }
     
     if (inner) {
-      componentHTML = componentHTML.replace(/<slot\s?\/>/, normalize(inner));
+      componentHTML = componentHTML.replace(new RegExp(patterns.slot), normalize(inner));
     }
 
     html = html.replace(outer, normalize(componentHTML));
