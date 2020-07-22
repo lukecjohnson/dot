@@ -30,7 +30,7 @@ const dir = {
 
 const patterns = {
   whitespace: /^\s+|\s+$/g,
-  component: /<component\s+src="([^"]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)(?:\s*\/>|>(?!.*<component)(.*?)<\/component>)/gms,
+  component: /<component:([a-z][a-z-]*)((?:\s+[a-z][a-z0-9-]*="[^"]*")*)(?:\s*\/>|>(?!.*<component)(.*?)<\/component:\1>)/gms,
   slot: /<slot\s?\/>/,
 };
 
@@ -57,25 +57,22 @@ async function compileComponents(html: string): Promise<string> {
   const components = html.matchAll(new RegExp(patterns.component));
 
   for (const component of components) {
-    const [ outer, src, rawProps, inner ] = component;
+    const [ outer, name, rawProps, inner ] = component;
 
     const props = parseComponentProps(rawProps);
 
     let componentHTML: string;
 
     try {
-     componentHTML = await fs.readFile(
-        path.resolve(
-          dir.components,
-          path.extname(src) === '.html' ? src : `${src}.html`
-        ),
+      componentHTML = await fs.readFile(
+        path.join(dir.components, `${name}.html`),
         { encoding: 'utf-8' }
       );
     } catch(error) {
       if (error.code === 'ENOENT') {
-        throw new Error(`Could not find component "${src}" - please ensure it exists in the components directory`);
+        throw new Error(`Could not find component "${name}" - please ensure "${name}.html" exists in the components directory`);
       } else {
-        throw new Error(`Failed to read HTML file for component "${src}"`);
+        throw new Error(`Failed to read HTML file for component "${name}"`);
       }
     }
 
@@ -101,7 +98,10 @@ async function compileView(view: string): Promise<void> {
   let html: string;
 
   try {
-    html = await fs.readFile(path.join(dir.views, view), { encoding: 'utf-8' });
+    html = await fs.readFile(
+      path.join(dir.views, view), 
+      { encoding: 'utf-8' }
+    );
   } catch (error) {
     if (error.code === 'ENOENT') {
       throw new Error(`Could not find view "${view}" - please ensure it exists in the views directory`);
