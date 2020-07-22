@@ -1,5 +1,5 @@
 {
-  "name": "html-preprocessor",
+  "name": "dot",
   "version": "0.1.0",
   "bin": {
     "dot": "./index.js"

@@ -10,7 +10,7 @@ import { version } from './package.json';
 const usage = `
 Usage:
 
-  project-name [options]
+  dot [options]
 
 Options:
 
