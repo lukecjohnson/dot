@@ -68,10 +68,10 @@ Options:
 ## Installation
 To install Dot locally (recommended):
 ```
-$ npm i -D dot-html
+$ npm i -D @lukecjohnson/dot
 ```
 
 To install Dot globally:
 ```
-$ npm i -g dot-html
+$ npm i -g @lukecjohnson/dot
 ```
