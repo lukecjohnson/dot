@@ -1,14 +1,20 @@
 {
-  "name": "dot",
+  "name": "dot-html",
   "version": "0.1.0",
-  "bin": {
-    "dot": "./index.js"
-  },
+  "description": "A preprocessor that adds reusable components with properties and slots to standard HTML",
+  "author": "Luke Johnson",
+  "repository": "lukecjohnson/dot",
+  "license": "MIT",
   "scripts": {
     "start": "tsc --watch",
-    "build": "tsc",
-    "example": "node . --root example --output example/public"
+    "build": "tsc"
   },
+  "bin": {
+    "dot": "./index.js"
+  },  
+  "files": [
+    "index.js"
+  ],
   "devDependencies": {
     "@types/node": "^14.0.23",
     "typescript": "^3.9.6"
