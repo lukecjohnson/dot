@@ -8,17 +8,15 @@ import * as arg from 'arg';
 import { version } from './package.json';
 
 const usage = `
-Usage:
-
-  dot [options]
+Usage: dot [options]
 
 Options:
 
-  -r, --root          Set root directory where "/views" and "/components" can be found
+  -r, --root          Specify path where \`views\` and \`components\` can be found
 
-  -o, --output        Set output directory for compiled views
+  -o, --output        Specify output path for compiled views
 
-  -v, --version       Print the current version
+  -v, --version       Displays the current version of Dot
 `;
 
 const dir = {
