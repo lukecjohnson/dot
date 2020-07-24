@@ -1,6 +1,6 @@
 {
   "name": "@lukecjohnson/dot",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A preprocessor that adds reusable components with properties and slots to standard HTML",
   "author": "Luke Johnson",
   "repository": "lukecjohnson/dot",
@@ -11,7 +11,7 @@
   },
   "bin": {
     "dot": "./index.js"
-  },  
+  },
   "files": [
     "index.js"
   ],
