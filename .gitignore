@@ -1,8 +1,9 @@
 # Build
 index.js
 
-# Dependencies
+# npm
 node_modules
+package-lock.json
 
 # IDE
 .vscode
