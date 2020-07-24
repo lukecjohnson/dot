@@ -64,3 +64,14 @@ Options:
   -v, --version       Displays the current version of Dot
 
 ```
+
+## Installation
+To install Dot locally (recommended):
+```
+$ npm i -D dot-html
+```
+
+To install Dot globally:
+```
+$ npm i -g dot-html
+```
