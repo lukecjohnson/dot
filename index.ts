@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
-import { promises as fs } from 'fs';
 import * as path from 'path';
+import { promises as fs } from 'fs';
+import { performance } from 'perf_hooks';
 
 import * as arg from 'arg';
 
@@ -168,12 +169,12 @@ async function main(): Promise<void> {
 
   if (args['--version']) {
     console.log(version);
-    process.exit(0);
+    return;
   }
 
   if (args['--help']) {
     console.log(usage);
-    process.exit(0);
+    return;
   }
 
   if (args['--root']) {
@@ -185,15 +186,16 @@ async function main(): Promise<void> {
   }
 
   const views = await getViews();
+
   for (const view of views) {
+    const start = performance.now();
     await compileView(view);
+    console.log(`\n\x1b[1;32m•\x1b[0m Compiled ${view} \x1b[2m(${(performance.now() - start).toFixed(2)}ms)\x1b[22m`);
   }
+
+  console.log();
 } 
 
-main()
-  .then(() => {
-    console.log('\n\x1b[1;32m•\x1b[0m Compiled successfully\n');
-  })
-  .catch((error) => {
-    console.log(`\n\x1b[1;31m•\x1b[0m Error: ${error.message}\n`);
-  })
+main().catch((error) => {
+  console.log(`\n\x1b[1;31m•\x1b[0m Error: ${error.message}\n`);
+});
