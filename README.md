@@ -81,3 +81,8 @@ To install Dot globally:
 ```
 $ npm i -g @lukecjohnson/dot
 ```
+
+Alternatively, Dot can be used without installing via `npx`:
+```
+$ npx @lukecjohnson/dot [options]
+```
