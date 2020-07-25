@@ -1,6 +1,6 @@
 {
   "name": "@lukecjohnson/dot",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A preprocessor that adds reusable components with properties and slots to standard HTML",
   "author": "Luke Johnson",
   "repository": "lukecjohnson/dot",
