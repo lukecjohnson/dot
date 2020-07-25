@@ -30,7 +30,7 @@ const dir = {
 const patterns = {
   whitespace: /^\s+|\s+$/g,
   component: /<component:([a-z][a-z-]*)((?:\s+[a-z][a-z0-9-]*="[^"]*")*)(?:\s*\/>|>(?!.*<component)(.*?)<\/component:\1>)/gms,
-  slot: /<slot(?:\s?\/>|><\/slot>)/,
+  slot: /<slot(?:\s*\/>|>(?!.*<slot)(.*?)<\/slot>)/gms,
 };
 
 function normalize(html: string): string {
@@ -41,24 +41,19 @@ function hasComponents(html: string): boolean {
   return new RegExp(patterns.component).test(html);
 }
 
-function parseComponentProps(rawProps: string): { key: string; value: string }[] {
-  const props = [...rawProps.matchAll(/([a-z][a-z0-9-]*)="([^"]*)"/gm)];
-
-  return props.map((prop) => {
-    return {
-      key: prop[1],
-      value: normalize(prop[2])
-    }
-  });
+function parseComponentProps(props: string): { key: string; value: string }[] {
+  return [...props.matchAll(/([a-z][a-z0-9-]*)="([^"]*)"/gm)]
+    .map((prop) => {
+      return {
+        key: prop[1],
+        value: normalize(prop[2])
+      }
+    });
 }
 
 async function compileComponents(html: string): Promise<string> {
-  const components = html.matchAll(new RegExp(patterns.component));
-
-  for (const component of components) {
-    const [ outer, name, rawProps, inner ] = component;
-
-    const props = parseComponentProps(rawProps);
+  for (const component of html.matchAll(new RegExp(patterns.component))) {
+    const [ element, name, props, content ] = component;
 
     let componentHTML: string;
 
@@ -75,15 +70,16 @@ async function compileComponents(html: string): Promise<string> {
       }
     }
 
-    for (const prop of props) {
+    for (const prop of parseComponentProps(props)) {
       componentHTML = componentHTML.replace(new RegExp(`{{\\s?${prop.key}\\s?}}`, 'g'), prop.value);
     }
-    
-    if (inner) {
-      componentHTML = componentHTML.replace(new RegExp(patterns.slot), normalize(inner));
+
+    for (const slot of componentHTML.matchAll(new RegExp(patterns.slot))) {
+      const [ slotElement, fallbackContent ] = slot;
+      componentHTML = componentHTML.replace(slotElement, normalize(content || fallbackContent));
     }
 
-    html = html.replace(outer, normalize(componentHTML));
+    html = html.replace(element, normalize(componentHTML));
   }
 
   if (hasComponents(html)) {
