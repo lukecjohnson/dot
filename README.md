@@ -40,6 +40,12 @@ At build time, the `<slot>` element is replaced with any content inside the `<co
 </component:page>
 ```
 
+The `<slot>` element can contain optional fallback content that will be used if no child content for a component 
+is provided:
+```html
+<slot>Default content...</slot>
+```
+
 ## Project structure
 Dot relies on a `views` directory containing the pages that will be compiled and output to `public`, 
 and a `components` directory containing the components that will be used with the `<component:component-name>` element.
