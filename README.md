@@ -1,7 +1,6 @@
-# x —
-`x-` is a preprocessor that adds reusable components with properties and slots to standard HTML.
+`x-` (pronounced "ex dash") is a preprocessor that adds reusable components with properties and slots to standard HTML.
 
-## Components
+### Components
 Components are created with a standard HTML file in the `components` directory. Properties are defined with a basic 
 template syntax:
 ```html
@@ -47,14 +46,14 @@ is provided:
 <x-slot>Default content...</slot>
 ```
 
-## Project structure
+### Project structure
 `x-` relies on a `views` directory containing the pages that will be compiled and output to `public`, 
 and a `components` directory containing the components that will be used with the `<x-component>` element.
 
 By default, `x-` looks for these directories in the current working directory. However, a custom path can be specified 
 with the `--root` CLI option.
 
-## CLI
+### CLI
 To get started, simply use the `x-` command to process and compile your project. See `x- --help` for 
 additional options:
 ```
@@ -72,7 +71,7 @@ Options:
 
 ```
 
-## Installation
+### Installation
 To install `x-` locally (recommended):
 ```
 $ npm install --save-dev x-
