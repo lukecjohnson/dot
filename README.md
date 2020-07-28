@@ -75,15 +75,15 @@ Options:
 ## Installation
 To install `x-` locally (recommended):
 ```
-$ npm i -D `x-`
+$ npm i -D x-
 ```
 
 To install `x-` globally:
 ```
-$ npm i -g `x-`
+$ npm i -g x-
 ```
 
 Alternatively, `x-` can be used without installing via `npx`:
 ```
-$ npx `x-` [options]
+$ npx x- [options]
 ```
