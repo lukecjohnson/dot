@@ -1,5 +1,5 @@
-# ●
-Dot is a preprocessor that adds reusable components with properties and slots to standard HTML.
+# x —
+`x-` is a preprocessor that adds reusable components with properties and slots to standard HTML.
 
 ## Components
 Components are created with a standard HTML file in the `components` directory. Properties are defined with a basic 
@@ -48,19 +48,19 @@ is provided:
 ```
 
 ## Project structure
-Dot relies on a `views` directory containing the pages that will be compiled and output to `public`, 
+`x-` relies on a `views` directory containing the pages that will be compiled and output to `public`, 
 and a `components` directory containing the components that will be used with the `<component>` element.
 
-By default, Dot looks for these directories in the current working directory. However, a custom path can be specified 
+By default, `x-` looks for these directories in the current working directory. However, a custom path can be specified 
 with the `--root` CLI option.
 
 ## CLI
-To get started using Dot, simply use the `dot` command to process and compile your project. See `dot --help` for 
+To get started, simply use the `x-` command to process and compile your project. See `x- --help` for 
 additional options:
 ```
-$ dot --help
+$ x- --help
 
-Usage: dot [options]
+Usage: x- [options]
 
 Options:
 
@@ -68,22 +68,22 @@ Options:
 
   -o, --output        Specify output path for compiled views
 
-  -v, --version       Displays the current version of Dot
+  -v, --version       Displays the current version
 
 ```
 
 ## Installation
-To install Dot locally (recommended):
+To install `x-` locally (recommended):
 ```
-$ npm i -D @lukecjohnson/dot
-```
-
-To install Dot globally:
-```
-$ npm i -g @lukecjohnson/dot
+$ npm i -D `x-`
 ```
 
-Alternatively, Dot can be used without installing via `npx`:
+To install `x-` globally:
 ```
-$ npx @lukecjohnson/dot [options]
+$ npm i -g `x-`
+```
+
+Alternatively, `x-` can be used without installing via `npx`:
+```
+$ npx `x-` [options]
 ```

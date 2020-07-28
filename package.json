@@ -1,16 +1,16 @@
 {
-  "name": "@lukecjohnson/dot",
+  "name": "x-",
   "version": "0.2.0",
   "description": "A preprocessor that adds reusable components with properties and slots to standard HTML",
   "author": "Luke Johnson",
-  "repository": "lukecjohnson/dot",
+  "repository": "lukecjohnson/x-",
   "license": "MIT",
   "scripts": {
     "start": "tsc --watch",
     "build": "tsc"
   },
   "bin": {
-    "dot": "./index.js"
+    "x-": "./index.js"
   },
   "files": [
     "index.js"

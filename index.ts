@@ -9,7 +9,7 @@ import * as arg from 'arg';
 import { version } from './package.json';
 
 const usage = `
-Usage: dot [options]
+Usage: x- [options]
 
 Options:
 
@@ -17,7 +17,7 @@ Options:
 
   -o, --output        Specify output path for compiled views
 
-  -v, --version       Displays the current version of Dot
+  -v, --version       Displays the current version
 `;
 
 const dir = {
