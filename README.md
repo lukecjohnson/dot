@@ -10,14 +10,14 @@ template syntax:
 <h1>Hello {{ name }}!</h1>
 ```
 
-Components can then be used throughout a project with the `<component>` element, which should include a `src` 
+Components can then be used throughout a project with the `<x-component>` element, which should include a `src` 
 attribute with the component's name ― the path to the `components` directory and `.html` extension 
 are implied. Property values are declared via additional attributes:
 ```html
-<component src="greeting" name="world">
+<x-component src="greeting" name="world">
 ```
 
-Components can also contain child content. The `<slot>` element is used to specify where content should be injected:
+Components can also contain child content. The `<x-slot>` element is used to specify where content should be injected:
 ```html
 <!-- components/page.html -->
 
@@ -27,29 +27,29 @@ Components can also contain child content. The `<slot>` element is used to speci
   </head>
   <body>
     <main>
-      <slot />
+      <x-slot />
     </main>
   </body>
 </html>
 ```
 
-At build time, the `<slot>` element is replaced with any content inside the `<component>` element:
+At build time, the `<x-slot>` element is replaced with any content inside the `<x-component>` element:
 ```html
-<component src="page" title="Home">
+<x-component src="page" title="Home">
   <h1>Home</h1>
   <p>Page content...</p>
-</component>
+</x-component>
 ```
 
-The `<slot>` element can contain optional fallback content that will be used if no child content for a component 
+The `<x-slot>` element can contain optional fallback content that will be used if no child content for a component 
 is provided:
 ```html
-<slot>Default content...</slot>
+<x-slot>Default content...</slot>
 ```
 
 ## Project structure
 `x-` relies on a `views` directory containing the pages that will be compiled and output to `public`, 
-and a `components` directory containing the components that will be used with the `<component>` element.
+and a `components` directory containing the components that will be used with the `<x-component>` element.
 
 By default, `x-` looks for these directories in the current working directory. However, a custom path can be specified 
 with the `--root` CLI option.

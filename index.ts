@@ -29,8 +29,8 @@ const dir = {
 
 const patterns = {
   whitespace: /^\s+|\s+$/g,
-  component: /<component src="([a-z-_.\/]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)\s*(?:\/>|>(?!.*<component)(.*?)<\/component>)/gms,
-  slot: /<slot(?:\s*\/>|>(.*?)<\/slot>)/gms,
+  component: /<x-component src="([a-z-_.\/]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)\s*(?:\/>|>(?!.*<x-component)(.*?)<\/x-component>)/gms,
+  slot: /<x-slot(?:\s*\/>|>(.*?)<\/x-slot>)/gms,
 };
 
 function normalize(html: string): string {
