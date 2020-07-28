@@ -29,7 +29,7 @@ const dir = {
 
 const patterns = {
   whitespace: /^\s+|\s+$/g,
-  component: /<component:([a-z][a-z-]*)((?:\s+[a-z][a-z0-9-]*="[^"]*")*)\s*(?:\/>|>(?!.*<component)(.*?)<\/component:\1>)/gms,
+  component: /<component src="([a-z-_.\/]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)\s*(?:\/>|>(?!.*<component)(.*?)<\/component>)/gms,
   slot: /<slot(?:\s*\/>|>(.*?)<\/slot>)/gms,
 };
 
@@ -53,20 +53,22 @@ function parseComponentProps(props: string): { key: string; value: string }[] {
 
 async function compileComponents(html: string): Promise<string> {
   for (const component of html.matchAll(new RegExp(patterns.component))) {
-    const [ element, name, props, content ] = component;
+    const [ element, src, props, content ] = component;
+
+    const file = path.extname(src) === '.html' ? src : `${src}.html`
 
     let componentHTML: string;
 
     try {
       componentHTML = await fs.readFile(
-        path.join(dir.components, `${name}.html`),
+        path.join(dir.components, file),
         { encoding: 'utf-8' }
       );
     } catch(error) {
       if (error.code === 'ENOENT') {
-        throw new Error(`Could not find component "${name}" - please ensure "${name}.html" exists in the components directory`);
+        throw new Error(`Could not find component "${src}" - please ensure "${file}" exists in the components directory`);
       } else {
-        throw new Error(`Failed to read HTML file for component "${name}"`);
+        throw new Error(`Failed to read HTML file for component "${src}"`);
       }
     }
 
