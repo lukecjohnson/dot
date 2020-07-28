@@ -1,6 +1,6 @@
 {
   "name": "x-",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A preprocessor that adds reusable components with properties and slots to standard HTML",
   "author": "Luke Johnson",
   "repository": "lukecjohnson/x-",
