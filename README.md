@@ -75,12 +75,12 @@ Options:
 ## Installation
 To install `x-` locally (recommended):
 ```
-$ npm i -D x-
+$ npm install --save-dev x-
 ```
 
 To install `x-` globally:
 ```
-$ npm i -g x-
+$ npm install --global x-
 ```
 
 Alternatively, `x-` can be used without installing via `npx`:
