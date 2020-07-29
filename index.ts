@@ -5,6 +5,7 @@ import { promises as fs } from 'fs';
 import { performance } from 'perf_hooks';
 
 import * as arg from 'arg';
+import * as marked from 'marked';
 
 import { version } from './package.json';
 
@@ -24,21 +25,12 @@ const dir = {
   root: path.join(process.cwd()),
   output: path.join(process.cwd(), 'public'),
   get views() { return path.join(this.root, 'views') },
-  get components() { return path.join(this.root, 'components') },
-};
-
-const patterns = {
-  whitespace: /^\s+|\s+$/g,
-  component: /<x-component src="([a-z-_.\/]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)\s*(?:\/>|>(?!.*<x-component)(.*?)<\/x-component>)/gms,
-  slot: /<x-slot(?:\s*\/>|>(.*?)<\/x-slot>)/gms,
+  get content() { return path.join(this.root, 'content') },
+  get components() { return path.join(this.root, 'components') }
 };
 
 function normalize(html: string): string {
-  return html.replace(new RegExp(patterns.whitespace), '');
-}
-
-function hasComponents(html: string): boolean {
-  return new RegExp(patterns.component).test(html);
+  return html.replace(/^\s+|\s+$/g, '');
 }
 
 function parseComponentProps(props: string): { key: string; value: string }[] {
@@ -52,7 +44,9 @@ function parseComponentProps(props: string): { key: string; value: string }[] {
 }
 
 async function compileComponents(html: string): Promise<string> {
-  for (const component of html.matchAll(new RegExp(patterns.component))) {
+  const componentPattern = /<x-component src="([a-z-_.\/]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)\s*(?:\/>|>(?!.*<x-component)(.*?)<\/x-component>)/gms;
+
+  for (const component of html.matchAll(componentPattern)) {
     const [ element, src, props, content ] = component;
 
     const file = path.extname(src) === '.html' ? src : `${src}.html`
@@ -76,7 +70,7 @@ async function compileComponents(html: string): Promise<string> {
       componentHTML = componentHTML.replace(new RegExp(`{{\\s?${prop.key}\\s?}}`, 'g'), prop.value);
     }
 
-    for (const slot of componentHTML.matchAll(new RegExp(patterns.slot))) {
+    for (const slot of componentHTML.matchAll(/<x-slot(?:\s*\/>|>(.*?)<\/x-slot>)/gms)) {
       const [ slotElement, fallbackContent ] = slot;
       componentHTML = componentHTML.replace(slotElement, normalize(content || fallbackContent));
     }
@@ -84,8 +78,35 @@ async function compileComponents(html: string): Promise<string> {
     html = html.replace(element, normalize(componentHTML));
   }
 
-  if (hasComponents(html)) {
-    html = await compileComponents(html); 
+  if (componentPattern.test(html)) {
+    html = await compileComponents(html);
+  }
+
+  return html;
+}
+
+async function compileContent(html: string): Promise<string> {
+  for (const content of html.matchAll(/<x-content\s+src="([a-z-_.\/]+)"\s*\/>/gm)) {
+    const [ element, src ] = content;
+
+    const file = path.extname(src) === '.md' ? src : `${src}.md`
+
+    let markdown: string;
+
+    try {
+      markdown = await fs.readFile(
+        path.join(dir.content, file),
+        { encoding: 'utf-8' }
+      );
+    } catch(error) {
+      if (error.code === 'ENOENT') {
+        throw new Error(`Could not find "${src}" - please ensure "${file}" exists in the content directory`);
+      } else {
+        throw new Error(`Failed to read "${src}"`);
+      }
+    }
+
+    html = html.replace(element, marked(markdown, { headerIds: false }));
   }
 
   return html;
@@ -107,9 +128,8 @@ async function compileView(view: string): Promise<void> {
     }
   }
 
-  if (hasComponents(html)) {
-    html = await compileComponents(html);
-  }
+  html = await compileContent(html);
+  html = await compileComponents(html);
 
   try {
     await fs.mkdir(path.join(dir.output, path.parse(view).dir), { recursive: true });
