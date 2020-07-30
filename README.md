@@ -1,4 +1,9 @@
-`x-` (pronounced "ex dash") is a preprocessor that adds reusable components with properties and slots to standard HTML.
+**`x-`** is a toolkit for building static websites with reusable components and simple Markdown rendering. Designed to 
+be a natural extension of HTML, it can be used to quickly prototype a site and get it off the ground, or it can be 
+progressively integrated into an existing project with zero configuration. Using the command line tool, 
+everything is compiled to standard HTML, ready to be published.
+
+---
 
 ### Components
 Components are created with a standard HTML file in the `components` directory. Properties are defined with a basic 
@@ -47,10 +52,10 @@ is provided:
 ```
 
 ### Project structure
-`x-` relies on a `views` directory containing the pages that will be compiled and output to `public`, 
+**`x-`** relies on a `views` directory containing the pages that will be compiled and output to `public`, 
 and a `components` directory containing the components that will be used with the `<x-component>` element.
 
-By default, `x-` looks for these directories in the current working directory. However, a custom path can be specified 
+By default, **`x-`** looks for these directories in the current working directory. However, a custom path can be specified 
 with the `--root` CLI option.
 
 ### CLI
@@ -72,17 +77,17 @@ Options:
 ```
 
 ### Installation
-To install `x-` locally (recommended):
+To install **`x-`** locally (recommended):
 ```
 $ npm install --save-dev x-
 ```
 
-To install `x-` globally:
+To install **`x-`** globally:
 ```
 $ npm install --global x-
 ```
 
-Alternatively, `x-` can be used without installing via `npx`:
+Alternatively, **`x-`** can be used without installing via `npx`:
 ```
 $ npx x- [options]
 ```
