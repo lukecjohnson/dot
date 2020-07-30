@@ -6,6 +6,7 @@ import { performance } from 'perf_hooks';
 
 import * as arg from 'arg';
 import * as marked from 'marked';
+import { html as formatHTML } from 'js-beautify';
 
 import { version } from './package.json';
 
@@ -54,10 +55,7 @@ async function compileComponents(html: string): Promise<string> {
     let componentHTML: string;
 
     try {
-      componentHTML = await fs.readFile(
-        path.join(dir.components, file),
-        { encoding: 'utf-8' }
-      );
+      componentHTML = await fs.readFile(path.join(dir.components, file), { encoding: 'utf-8' });
     } catch(error) {
       if (error.code === 'ENOENT') {
         throw new Error(`Could not find component "${src}" - please ensure "${file}" exists in the components directory`);
@@ -94,10 +92,7 @@ async function compileContent(html: string): Promise<string> {
     let markdown: string;
 
     try {
-      markdown = await fs.readFile(
-        path.join(dir.content, file),
-        { encoding: 'utf-8' }
-      );
+      markdown = await fs.readFile(path.join(dir.content, file), { encoding: 'utf-8' });
     } catch(error) {
       if (error.code === 'ENOENT') {
         throw new Error(`Could not find "${src}" - please ensure "${file}" exists in the content directory`);
@@ -116,10 +111,7 @@ async function compileView(view: string): Promise<void> {
   let html: string;
 
   try {
-    html = await fs.readFile(
-      path.join(dir.views, view), 
-      { encoding: 'utf-8' }
-    );
+    html = await fs.readFile(path.join(dir.views, view), { encoding: 'utf-8' });
   } catch (error) {
     if (error.code === 'ENOENT') {
       throw new Error(`Could not find view "${view}" - please ensure it exists in the views directory`);
@@ -130,6 +122,12 @@ async function compileView(view: string): Promise<void> {
 
   html = await compileContent(html);
   html = await compileComponents(html);
+
+  html = formatHTML(html, { 
+    indent_size: 2, 
+    preserve_newlines: false,
+    wrap_line_length: 120
+  });
 
   try {
     await fs.mkdir(path.join(dir.output, path.parse(view).dir), { recursive: true });

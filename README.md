@@ -1,7 +1,7 @@
 **`x-`** is a toolkit for building static websites with reusable components and simple Markdown rendering. Designed to 
 be a natural extension of HTML, it can be used to quickly prototype a site and get it off the ground, or it can be 
 progressively integrated into an existing project with zero configuration. Using the command line tool, 
-everything is compiled to standard HTML, ready to be published.
+everything is compiled to well-formatted, standard HTML, ready to be published.
 
 ---
 
