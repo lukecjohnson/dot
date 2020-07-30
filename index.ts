@@ -86,7 +86,7 @@ async function compileComponents(html: string): Promise<string> {
 }
 
 async function compileContent(html: string): Promise<string> {
-  for (const content of html.matchAll(/<x-content\s+src="([a-z-_.\/]+)"\s*\/>/gm)) {
+  for (const content of html.matchAll(/<x-content\s+src="([a-z-_.\/]+)"(?:\s*\/>|>\s*<\/x-content>)/gm)) {
     const [ element, src ] = content;
 
     const file = path.extname(src) === '.md' ? src : `${src}.md`
