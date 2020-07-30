@@ -14,7 +14,7 @@ Usage: x- [options]
 
 Options:
 
-  -r, --root          Specify path where \`views\` and \`components\` can be found
+  -r, --root          Specify path where \`views\`, \`components\`, and \`content\` can be found
 
   -o, --output        Specify output path for compiled views
 
