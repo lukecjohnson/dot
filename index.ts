@@ -30,8 +30,12 @@ const dir = {
   get components() { return path.join(this.root, 'components') }
 };
 
-function normalize(html: string): string {
+function normalizeWhitespace(html: string): string {
   return html.replace(/^\s+|\s+$/g, '');
+}
+
+function stripComments(html: string): string {
+  return html.replace(/<!--.*?-->/gms, '');
 }
 
 function parseComponentProps(props: string): { key: string; value: string }[] {
@@ -39,7 +43,7 @@ function parseComponentProps(props: string): { key: string; value: string }[] {
     .map((prop) => {
       return {
         key: prop[1],
-        value: normalize(prop[2])
+        value: normalizeWhitespace(prop[2])
       }
     });
 }
@@ -64,16 +68,18 @@ async function compileComponents(html: string): Promise<string> {
       }
     }
 
+    componentHTML = stripComments(componentHTML);
+
     for (const prop of parseComponentProps(props)) {
       componentHTML = componentHTML.replace(new RegExp(`{{\\s?${prop.key}\\s?}}`, 'g'), prop.value);
     }
 
     for (const slot of componentHTML.matchAll(/<x-slot(?:\s*\/>|>(.*?)<\/x-slot>)/gms)) {
       const [ slotElement, fallbackContent ] = slot;
-      componentHTML = componentHTML.replace(slotElement, normalize(content || fallbackContent));
+      componentHTML = componentHTML.replace(slotElement, normalizeWhitespace(content || fallbackContent));
     }
 
-    html = html.replace(element, normalize(componentHTML));
+    html = html.replace(element, normalizeWhitespace(componentHTML));
   }
 
   if (componentPattern.test(html)) {
@@ -119,6 +125,8 @@ async function compileView(view: string): Promise<void> {
       throw new Error(`Failed to read HTML file for view "${view}"`);
     }
   }
+
+  html = stripComments(html);
 
   html = await compileContent(html);
   html = await compileComponents(html);
