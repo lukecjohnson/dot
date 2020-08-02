@@ -3,7 +3,7 @@ be a natural extension of HTML, it can be used to quickly prototype a site and g
 progressively integrated into an existing project with zero configuration. Using the command line tool, 
 everything is compiled to well-formatted, standard HTML, ready to be published.
 
----
+## Overview
 
 ### Components
 Components are created with a standard HTML file in the `components` directory. Properties are defined with a basic 
@@ -98,7 +98,7 @@ Options:
 
 ```
 
-### Installation
+## Installation
 To install **`x-`** locally (recommended):
 
 ```
@@ -116,3 +116,22 @@ Alternatively, **`x-`** can be used without installing via `npx`:
 ```
 $ npx x- [options]
 ```
+
+## Roadmap
+
+- [ ] Implement better HTML parser
+  - The project is currently using regular expressions for parsing and manipulating HTML,
+    which is often discouraged. Libraries like [`cheerio`](https://github.com/cheeriojs/cheerio) and 
+    [`jsdom`](https://github.com/jsdom/jsdom) seem a bit overkill and are noticebly less performant, but I'd like to 
+    look into lower level libraries like [`parse5`](https://github.com/inikulin/parse5) and 
+    [`htmlparser2`](https://github.com/fb55/htmlparser2).
+
+- [ ] Add named slots 
+
+- [ ] Replace `--root` and `--output` CLI options with input/output arguments 
+
+- [ ] Add `--components` and `--content` CLI options
+
+- [ ] Add file watching and automatic rebuilding with `--watch` CLI option
+
+- [ ] Add Node API
