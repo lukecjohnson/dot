@@ -22,13 +22,10 @@ Options:
   -v, --version       Displays the current version
 `;
 
-const dir = {
-  root: path.join(process.cwd()),
-  output: path.join(process.cwd(), 'public'),
-  get views() { return path.join(this.root, 'views') },
-  get content() { return path.join(this.root, 'content') },
-  get components() { return path.join(this.root, 'components') }
-};
+let inputDir: string;
+let outputDir: string;
+let contentDir: string;
+let componentsDir: string;
 
 function normalizeWhitespace(html: string): string {
   return html.replace(/^\s+|\s+$/g, '');
@@ -59,7 +56,7 @@ async function compileComponents(html: string): Promise<string> {
     let componentHTML: string;
 
     try {
-      componentHTML = await fs.readFile(path.join(dir.components, file), { encoding: 'utf-8' });
+      componentHTML = await fs.readFile(path.join(componentsDir, file), { encoding: 'utf-8' });
     } catch(error) {
       if (error.code === 'ENOENT') {
         throw new Error(`Could not find component "${src}" - please ensure "${file}" exists in the components directory`);
@@ -98,7 +95,7 @@ async function compileContent(html: string): Promise<string> {
     let markdown: string;
 
     try {
-      markdown = await fs.readFile(path.join(dir.content, file), { encoding: 'utf-8' });
+      markdown = await fs.readFile(path.join(contentDir, file), { encoding: 'utf-8' });
     } catch(error) {
       if (error.code === 'ENOENT') {
         throw new Error(`Could not find "${src}" - please ensure "${file}" exists in the content directory`);
@@ -113,16 +110,16 @@ async function compileContent(html: string): Promise<string> {
   return html;
 }
 
-async function compileView(view: string): Promise<void> {
+async function compileEntry(entry: string): Promise<void> {
   let html: string;
 
   try {
-    html = await fs.readFile(path.join(dir.views, view), { encoding: 'utf-8' });
+    html = await fs.readFile(path.join(inputDir, entry), { encoding: 'utf-8' });
   } catch (error) {
     if (error.code === 'ENOENT') {
-      throw new Error(`Could not find view "${view}" - please ensure it exists in the views directory`);
+      throw new Error(`Could not find "${entry}"`);
     } else {
-      throw new Error(`Failed to read HTML file for view "${view}"`);
+      throw new Error(`Failed to read "${entry}"`);
     }
   }
 
@@ -138,55 +135,66 @@ async function compileView(view: string): Promise<void> {
   });
 
   try {
-    await fs.mkdir(path.join(dir.output, path.parse(view).dir), { recursive: true });
+    await fs.mkdir(path.join(outputDir, path.dirname(entry)), { recursive: true });
   } catch {
     throw new Error('Failed to create output directory');
   }
 
   try {
-    await fs.writeFile(path.join(dir.output, view), html, 'utf-8');
+    await fs.writeFile(path.join(outputDir, entry), html, 'utf-8');
   } catch {
-    throw new Error(`Failed to write compiled HTML file for view "${view}"`)
+    throw new Error(`Failed to write compiled HTML file for "${entry}"`)
   }
 }
 
-async function getViews(subDirectory: string = ''): Promise<string[]> {
+async function getEntries(directory: string): Promise<string[]> {
+  const excludedDirectories = [
+    contentDir,
+    componentsDir,
+    outputDir
+  ];
+  
   let files: string[];
 
   try {
-    files = await fs.readdir(path.join(dir.views, subDirectory));
+    files = await fs.readdir(directory);
   } catch(error) {
     if (error.code === 'ENOENT') {
-      throw new Error('Could not find the views directory');
+      throw new Error(`Could not find ${directory}`);
     } else {
-      throw new Error('Failed to read the views directory');
+      throw new Error(`Failed to read ${directory}`);
     }
   }
 
-  let views: string[] = [];
+  let entries: string[] = [];
 
   for (const file of files) {
-    if ((await fs.stat(path.join(dir.views, subDirectory, file))).isDirectory()) {
-      views = [
-        ...views, 
-        ...(await getViews(path.join(subDirectory, file))).map(f => path.join(file, f))
+    const isDirectory = (await fs.stat(path.join(directory, file))).isDirectory();
+    
+    if (isDirectory && !excludedDirectories.includes(path.join(directory, file))) {
+      entries = [
+        ...entries, 
+        ...(await getEntries(path.join(directory, file))).map(f => path.join(file, f))
       ];
-    } else {
-      views = [...views, file];
+
+      continue;
+    } 
+    
+    if (path.extname(file) === '.html') {
+      entries = [...entries, path.join(file)];
     }
   }
 
-  return views;
+  return entries;
 }
 
 async function main(): Promise<void> {
   const args = arg({
-    '--root': String,
     '--output': String,
+    '--content': String,
+    '--components': String,
     '--version': Boolean,
     '--help': Boolean,
-    '-r': '--root',
-    '-o': '--output',
     '-v': '--version',
     '-h': '--help'
   });
@@ -201,20 +209,17 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (args['--root']) {
-    dir.root = path.resolve(process.cwd(), args['--root']);
-  }
+  inputDir = args._[0] || '.';
+  outputDir = args['--output'] || 'public';
+  contentDir = args['--content'] || path.join(inputDir, '_content');
+  componentsDir = args['--components'] || path.join(inputDir, '_components');
+  
+  const entries = await getEntries(inputDir);
 
-  if (args['--output']) {
-    dir.output = path.resolve(process.cwd(), args['--output']);
-  }
-
-  const views = await getViews();
-
-  for (const view of views) {
+  for (const entry of entries) {
     const start = performance.now();
-    await compileView(view);
-    console.log(`\n\x1b[1;32m•\x1b[0m Compiled ${view} \x1b[2m(${(performance.now() - start).toFixed(2)}ms)\x1b[22m`);
+    await compileEntry(entry);
+    console.log(`\n\x1b[1;32m•\x1b[0m Compiled ${entry} \x1b[2m(${(performance.now() - start).toFixed(2)}ms)\x1b[22m`);
   }
 
   console.log();
