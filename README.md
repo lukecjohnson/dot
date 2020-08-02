@@ -128,10 +128,6 @@ $ npx x- [options]
 
 - [ ] Add named slots 
 
-- [ ] Replace `--root` and `--output` CLI options with input/output arguments 
-
-- [ ] Add `--components` and `--content` CLI options
-
 - [ ] Add file watching and automatic rebuilding with `--watch` CLI option
 
 - [ ] Add Node API
