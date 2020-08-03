@@ -75,7 +75,7 @@ async function compileComponents(html: string): Promise<string> {
 
     for (const slot of componentHTML.matchAll(/<x-slot(?:\s*\/>|>(.*?)<\/x-slot>)/gms)) {
       const [ slotElement, fallbackContent ] = slot;
-      componentHTML = componentHTML.replace(slotElement, normalizeWhitespace(content || fallbackContent));
+      componentHTML = componentHTML.replace(slotElement, normalizeWhitespace(content) || normalizeWhitespace(fallbackContent));
     }
 
     html = html.replace(element, normalizeWhitespace(componentHTML));
