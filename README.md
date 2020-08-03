@@ -86,15 +86,17 @@ additional options:
 ```
 $ x- --help
 
-Usage: x- [options]
+Usage: x- [input] [options]
 
 Options:
 
-  -r, --root          Specify path where `views`, `components`, and `content` can be found
+  --output            Path to output directory (default: ./public)
 
-  -o, --output        Specify output path for compiled views
+  --content           Path to content directory (default: [input]/_content)
 
-  -v, --version       Displays the current version
+  --components        Path to components directory (default: [input]/_components)
+
+  -v, --version       Prints the current version
 
 ```
 
