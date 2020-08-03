@@ -78,6 +78,8 @@ async function compileComponents(html: string): Promise<string> {
       componentHTML = componentHTML.replace(slotElement, normalizeWhitespace(content) || normalizeWhitespace(fallbackContent));
     }
 
+    componentHTML = await compileContent(componentHTML);
+
     html = html.replace(element, normalizeWhitespace(componentHTML));
   }
 
