@@ -48,7 +48,7 @@ function parseComponentProps(props: string): { key: string; value: string }[] {
 }
 
 async function compileComponents(html: string): Promise<string> {
-  const componentPattern = /<x-component src="([a-z-_.\/]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)\s*(?:\/>|>(?!.*<x-component)(.*?)<\/x-component>)/gms;
+  const componentPattern = /<x-component\s+src="([a-z-_.\/]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)\s*(?:\/>|>(?!.*<x-component)(.*?)<\/x-component>)/gms;
 
   for (const component of html.matchAll(componentPattern)) {
     const [ element, src, props, content ] = component;
