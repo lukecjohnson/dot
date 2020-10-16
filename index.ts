@@ -17,17 +17,11 @@ Options:
 
   --output            Path to output directory (default: ./public)
 
-  --content           Path to content directory (default: [input]/_content)
-
-  --components        Path to components directory (default: [input]/_components)
-
   -v, --version       Prints the current version
 `;
 
 let inputDir: string;
 let outputDir: string;
-let contentDir: string;
-let componentsDir: string;
 
 function normalizeWhitespace(html: string): string {
   return html.replace(/^\s+|\s+$/g, '');
@@ -47,23 +41,23 @@ function parseComponentProps(props: string): { key: string; value: string }[] {
     });
 }
 
-async function compileComponents(html: string): Promise<string> {
+async function compileComponents(html: string, basePath: string): Promise<string> {
   const componentPattern = /<x-component\s+src="([a-z-_.\/]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)\s*(?:\/>|>(?!.*<x-component)(.*?)<\/x-component>)/gms;
 
   for (const component of html.matchAll(componentPattern)) {
-    const [ element, src, props, content ] = component;
+    const [element, src, props, content] = component;
 
-    const file = path.extname(src) === '.html' ? src : `${src}.html`
+    const componentPath = path.resolve(path.dirname(basePath), path.extname(src) ? src : `${src}.html`);
 
     let componentHTML: string;
 
     try {
-      componentHTML = await fs.readFile(path.join(componentsDir, file), { encoding: 'utf-8' });
+      componentHTML = await fs.readFile(componentPath, { encoding: 'utf-8' });
     } catch(error) {
       if (error.code === 'ENOENT') {
-        throw new Error(`Could not find component "${src}" - please ensure "${file}" exists in the components directory`);
+        throw new Error(`Could not resolve "${src}" - please ensure "${componentPath}" exists`);
       } else {
-        throw new Error(`Failed to read HTML file for component "${src}"`);
+        throw new Error(`Failed to read "${componentPath}"`);
       }
     }
 
@@ -74,37 +68,41 @@ async function compileComponents(html: string): Promise<string> {
     }
 
     for (const slot of componentHTML.matchAll(/<x-slot(?:\s*\/>|>(.*?)<\/x-slot>)/gms)) {
-      const [ slotElement, fallbackContent ] = slot;
-      componentHTML = componentHTML.replace(slotElement, normalizeWhitespace(content) || normalizeWhitespace(fallbackContent));
+      const [slotElement, fallbackContent] = slot;
+      componentHTML = componentHTML.replace(slotElement, content 
+        ? normalizeWhitespace(content) 
+        : normalizeWhitespace(fallbackContent)
+      );
     }
 
-    componentHTML = await compileContent(componentHTML);
+    componentHTML = await compileContent(componentHTML, componentPath);
+    componentHTML = await compileComponents(componentHTML, componentPath);
 
     html = html.replace(element, normalizeWhitespace(componentHTML));
   }
 
   if (componentPattern.test(html)) {
-    html = await compileComponents(html);
+    html = await compileComponents(html, basePath);
   }
 
   return html;
 }
 
-async function compileContent(html: string): Promise<string> {
+async function compileContent(html: string, basePath: string): Promise<string> {
   for (const content of html.matchAll(/<x-content\s+src="([a-z-_.\/]+)"(?:\s*\/>|>\s*<\/x-content>)/gm)) {
-    const [ element, src ] = content;
+    const [element, src] = content;
 
-    const file = path.extname(src) === '.md' ? src : `${src}.md`
+    const contentPath = path.resolve(path.dirname(basePath), path.extname(src) ? src : `${src}.md`);
 
     let markdown: string;
 
     try {
-      markdown = await fs.readFile(path.join(contentDir, file), { encoding: 'utf-8' });
+      markdown = await fs.readFile(contentPath, { encoding: 'utf-8' });
     } catch(error) {
       if (error.code === 'ENOENT') {
-        throw new Error(`Could not find "${src}" - please ensure "${file}" exists in the content directory`);
+        throw new Error(`Could not resolve "${src}" - please ensure "${contentPath}" exists`);
       } else {
-        throw new Error(`Failed to read "${src}"`);
+        throw new Error(`Failed to read "${contentPath}"`);
       }
     }
 
@@ -129,10 +127,10 @@ async function compileEntry(entry: string): Promise<void> {
 
   html = stripComments(html);
 
-  html = await compileContent(html);
-  html = await compileComponents(html);
+  html = await compileContent(html, path.join(inputDir, entry));
+  html = await compileComponents(html, path.join(inputDir, entry));
 
-  html = formatHTML(html, { 
+  html = formatHTML(html, {
     indent_size: 2, 
     preserve_newlines: false,
     wrap_line_length: 120
@@ -151,13 +149,7 @@ async function compileEntry(entry: string): Promise<void> {
   }
 }
 
-async function getEntries(directory: string): Promise<string[]> {
-  const excludedDirectories = [
-    contentDir,
-    componentsDir,
-    outputDir
-  ];
-  
+async function getEntries(directory: string): Promise<string[]> {  
   let files: string[];
 
   try {
@@ -175,7 +167,7 @@ async function getEntries(directory: string): Promise<string[]> {
   for (const file of files) {
     const isDirectory = (await fs.stat(path.join(directory, file))).isDirectory();
     
-    if (isDirectory && !excludedDirectories.includes(path.join(directory, file))) {
+    if (isDirectory) {
       entries = [
         ...entries, 
         ...(await getEntries(path.join(directory, file))).map(f => path.join(file, f))
@@ -195,8 +187,6 @@ async function getEntries(directory: string): Promise<string[]> {
 async function main(): Promise<void> {
   const args = arg({
     '--output': String,
-    '--content': String,
-    '--components': String,
     '--version': Boolean,
     '--help': Boolean,
     '-v': '--version',
@@ -215,8 +205,6 @@ async function main(): Promise<void> {
 
   inputDir = args._[0] || '.';
   outputDir = args['--output'] || 'public';
-  contentDir = args['--content'] || path.join(inputDir, '_content');
-  componentsDir = args['--components'] || path.join(inputDir, '_components');
   
   const entries = await getEntries(inputDir);
 
