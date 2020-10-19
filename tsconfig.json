@@ -1,8 +1,12 @@
 {
   "compilerOptions": {
-    "target": "es2020",
+    "target": "esnext",
     "module": "commonjs",
     "resolveJsonModule": true,
     "strict": true
-  }
+  },
+  "files": [
+    "index.ts",
+    "cli.ts"
+  ]
 }

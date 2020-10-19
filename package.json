@@ -5,16 +5,20 @@
   "author": "Luke Johnson",
   "repository": "lukecjohnson/x-",
   "license": "MIT",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "bin": {
+    "x-": "cli.js"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "cli.js"
+  ],
   "scripts": {
     "start": "tsc --watch",
     "build": "tsc"
   },
-  "bin": {
-    "x-": "./index.js"
-  },
-  "files": [
-    "index.js"
-  ],
   "devDependencies": {
     "@types/js-beautify": "^1.11.0",
     "@types/marked": "^1.1.0",
