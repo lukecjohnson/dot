@@ -35,6 +35,10 @@ async function getEntries(inputPath: string, outputPath: string): Promise<string
   let entries: string[][] = [];
 
   for (const file of files) {
+    if (file[0] === '_') {
+      continue;
+    }
+
     const isDirectory = (await fs.stat(path.join(inputPath, file))).isDirectory();
     
     if (isDirectory) {
