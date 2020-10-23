@@ -95,11 +95,18 @@ $ x- src/pages --output static
 `render()` reads the provided file and returns rendered HTML as a string:
 
 ```ts
-import { render } from 'x-';
+render(filePath: string) => Promise<string>
+```
 
-async () => {
+Example:
+
+```js
+const { render } = require('x-');
+
+async function example() {
   const html = await render('index.html');
-}
+  console.log(html);
+};
 ```
 
 ## Installation
