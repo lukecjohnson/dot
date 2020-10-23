@@ -10,11 +10,11 @@ import { render } from '.';
 import { version } from './package.json';
 
 const usage = `
-Usage: x- [input] [options]
+Usage: x- <input> [options]
 
 Options:
 
-  -o, --output        Path to output directory (default: ./public)
+  -o, --output        Output path (Default: ./public)
 
   -v, --version       Prints the current version
 `;
@@ -43,7 +43,7 @@ async function getEntries(inputPath: string, outputPath: string): Promise<string
     
     if (isDirectory) {
       entries = [
-        ...entries, 
+        ...entries,
         ...(await getEntries(path.join(inputPath, file), path.join(outputPath, file)))
       ];
 
@@ -52,7 +52,7 @@ async function getEntries(inputPath: string, outputPath: string): Promise<string
     
     if (path.extname(file) === '.html') {
       entries = [
-        ...entries, 
+        ...entries,
         [path.join(inputPath, file), path.join(outputPath, file)]
       ];
     }
@@ -83,13 +83,18 @@ async function main(): Promise<void> {
     return;
   }
 
-  const inputPath = args._[0] || '.';
+  const inputPath = args._[0];
+
+  if (!inputPath) {
+    throw new Error(`Input path is missing. See \`x- --help\` for usage instructions`)
+  }
+
   const outputPath = args['--output'] || 'public';
 
-  let inputIsDirectory;
+  let inputPathIsDirectory;
 
   try {
-    inputIsDirectory = (await fs.stat(inputPath)).isDirectory();
+    inputPathIsDirectory = (await fs.stat(inputPath)).isDirectory();
   } catch (error) {
     if (error.code === 'ENOENT') {
       throw new Error(`Could not find "${inputPath}"`);
@@ -98,17 +103,17 @@ async function main(): Promise<void> {
     }
   }
 
-  const outputIsDirectory = path.extname(outputPath) === '';
+  const outputPathIsDirectory = path.extname(outputPath) === '';
 
   let entries: string[][];
 
-  if (inputIsDirectory) {
+  if (inputPathIsDirectory) {
     entries = await getEntries(inputPath, outputPath);
   } else {
     entries = [
       [
         inputPath,
-        outputIsDirectory ? path.join(outputPath, path.basename(inputPath)) : outputPath 
+        outputPathIsDirectory ? path.join(outputPath, path.basename(inputPath)) : outputPath 
       ]
     ];
   }
