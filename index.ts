@@ -18,7 +18,7 @@ function parseComponentProps(props: string): { key: string; value: string }[] {
       return {
         key: prop[1],
         value: normalizeWhitespace(prop[2])
-      }
+      };
     });
 }
 

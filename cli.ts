@@ -86,7 +86,7 @@ async function main(): Promise<void> {
   const inputPath = args._[0];
 
   if (!inputPath) {
-    throw new Error(`Input path is missing. See \`x- --help\` for usage instructions`)
+    throw new Error(`Input path is missing. See \`x- --help\` for usage instructions`);
   }
 
   const outputPath = args['--output'] || 'public';
@@ -132,7 +132,7 @@ async function main(): Promise<void> {
     try {
       await fs.writeFile(entryOutputPath, html, 'utf-8');
     } catch {
-      throw new Error(`Failed to write "${entryOutputPath}"`)
+      throw new Error(`Failed to write "${entryOutputPath}"`);
     }
 
     const renderTime = (performance.now() - startTime).toFixed(2);
