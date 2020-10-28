@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { promises as fs } from 'fs';
 
-import * as marked from 'marked';
+import { parse as md } from 'markdown-wasm';
 import { html as formatHTML } from 'js-beautify';
 
 function normalizeWhitespace(html: string): string {
@@ -87,7 +87,7 @@ async function renderContent(html: string, filePath: string): Promise<string> {
       }
     }
 
-    html = html.replace(element, marked(markdown, { headerIds: false }));
+    html = html.replace(element, md(markdown));
   }
 
   return html;
