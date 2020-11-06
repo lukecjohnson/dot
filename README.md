@@ -1,6 +1,6 @@
-`x-` is a toolkit for building static websites with reusable components and simple Markdown rendering. Designed to 
-be a natural extension of HTML, it can be used to quickly protoype and build a site from the ground up, or can be 
-progressively integrated into an existing project with zero configuration. Using either the CLI or JavaScript API, 
+`x-` is a toolkit for building static websites with reusable components and simple Markdown rendering. Designed to
+be a natural extension of HTML, it can be used to quickly prototype and build a site from the ground up, or can be
+progressively integrated into an existing project with zero configuration. Using either the CLI or JavaScript API,
 everything is rendered to well-formatted, standard HTML, ready to be published.
 
 ## Overview
@@ -15,8 +15,8 @@ Components are created with a standard HTML file where properties can be defined
 <h1>Hello {{ name }}!</h1>
 ```
 
-Components can then be used throughout a project with the `<x-component>` element, which should include a `src` 
-attribute with the relative path to a component file ― the `.html` extension is implied. Property values are assigned 
+Components can then be used throughout a project with the `<x-component>` element, which should include a `src`
+attribute with the relative path to a component file ― the `.html` extension is implied. Property values are assigned
 with additional attributes on the `<x-component>` element:
 
 ```html
@@ -49,7 +49,7 @@ At build time, the `<x-slot>` element is replaced with any content inside the `<
 </x-component>
 ```
 
-The `<x-slot>` element can contain optional fallback content that will be used if no child content for a component 
+The `<x-slot>` element can contain optional fallback content that will be used if no child content for a component
 is provided:
 
 ```html
@@ -67,9 +67,9 @@ is used to specify the relative path to a Markdown file:
 
 ## CLI
 
-The CLI takes an input path to a file or directory and outputs compiled HTML files to `./public` or the path specified 
-with the `--output` option. If the provided input path is a directory, `x-` will recusively find and compile each HTML 
-file in the given directory and its subdirectories. Any file or directory starting with an underscore 
+The CLI takes an input path to a file or directory and outputs compiled HTML files to `./public` or the path specified
+with the `--output` option. If the provided input path is a directory, `x-` will recursively find and compile each HTML
+file in the given directory and its subdirectories. Any file or directory starting with an underscore
 (e.g.,&nbsp;`_components`) will be ignored.
 
 ```
@@ -117,9 +117,9 @@ $ npm install --save-dev x-
 ## Roadmap
 - [ ] Implement better HTML parser
   - The project is currently using regular expressions for parsing and manipulating HTML,
-    which is often discouraged. Libraries like [`cheerio`](https://github.com/cheeriojs/cheerio) and 
-    [`jsdom`](https://github.com/jsdom/jsdom) seem a bit overkill and are noticebly less performant, but I'd like to 
-    look into lower level libraries like [`parse5`](https://github.com/inikulin/parse5) and 
+    which is often discouraged. Libraries like [`cheerio`](https://github.com/cheeriojs/cheerio) and
+    [`jsdom`](https://github.com/jsdom/jsdom) seem a bit overkill and are noticeably less performant, but I'd like to
+    look into lower level libraries like [`parse5`](https://github.com/inikulin/parse5) and
     [`htmlparser2`](https://github.com/fb55/htmlparser2).
 
 - [ ] Add named slots
