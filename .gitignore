@@ -1,6 +1,5 @@
-# Build
-index.js
-cli.js
+# Build output
+dist
 
 # npm
 node_modules

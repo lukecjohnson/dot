@@ -2,11 +2,9 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "commonjs",
-    "resolveJsonModule": true,
-    "strict": true
+    "strict": true,
+    "declaration": true,
+    "outDir": "dist"
   },
-  "files": [
-    "index.ts",
-    "cli.ts"
-  ]
+  "include": ["src/**/*"]
 }

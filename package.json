@@ -5,16 +5,12 @@
   "author": "Luke Johnson",
   "repository": "lukecjohnson/x-",
   "license": "MIT",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
-    "x-": "cli.js"
+    "x-": "dist/cli.js"
   },
-  "files": [
-    "index.js",
-    "index.d.ts",
-    "cli.js"
-  ],
+  "files": ["dist"],
   "scripts": {
     "start": "tsc --watch",
     "build": "tsc"

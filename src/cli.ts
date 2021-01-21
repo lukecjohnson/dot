@@ -3,11 +3,8 @@
 import * as path from 'path';
 import { promises as fs } from 'fs';
 import { performance } from 'perf_hooks';
-
 import * as arg from 'arg';
-
 import { render } from '.';
-import { version } from './package.json';
 
 const usage = `
 Usage: x- <input> [options]
@@ -53,7 +50,7 @@ async function main(): Promise<void> {
   });
 
   if (args['--version']) {
-    console.log(version);
+    console.log(require('../package.json').version);
     return;
   }
 

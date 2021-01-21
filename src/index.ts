@@ -1,6 +1,5 @@
 import * as path from 'path';
 import { promises as fs } from 'fs';
-
 import { parse as parseHTML, HTMLElement } from 'node-html-parser';
 import * as parseMarkdown from 'marked';
 import { html as formatHTML } from 'js-beautify';
