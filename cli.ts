@@ -20,41 +20,20 @@ Options:
 `;
 
 async function getEntries(inputPath: string, outputPath: string): Promise<string[][]> {
-  let files: string[];
+  const entries: string[][] = [];
 
-  try {
-    files = await fs.readdir(inputPath);
-  } catch(error) {
-    if (error.code === 'ENOENT') {
-      throw new Error(`Could not find ${inputPath}`);
-    } else {
-      throw new Error(`Failed to read ${inputPath}`);
-    }
-  }
-
-  let entries: string[][] = [];
-
-  for (const file of files) {
-    if (file[0] === '_') {
+  for (const file of await fs.readdir(inputPath, { withFileTypes: true })) {
+    if (file.name[0] === '_') {
       continue;
     }
 
-    const isDirectory = (await fs.stat(path.join(inputPath, file))).isDirectory();
-    
-    if (isDirectory) {
-      entries = [
-        ...entries,
-        ...(await getEntries(path.join(inputPath, file), path.join(outputPath, file)))
-      ];
-
+    if (file.isDirectory()) {
+      entries.push(...(await getEntries(path.join(inputPath, file.name), path.join(outputPath, file.name))));
       continue;
-    } 
-    
-    if (path.extname(file) === '.html') {
-      entries = [
-        ...entries,
-        [path.join(inputPath, file), path.join(outputPath, file)]
-      ];
+    }
+
+    if (path.extname(file.name) === '.html') {
+      entries.push([path.join(inputPath, file.name), path.join(outputPath, file.name)])
     }
   }
 
@@ -84,56 +63,23 @@ async function main(): Promise<void> {
   }
 
   const inputPath = args._[0];
+  const outputPath = args['--output'] || 'public';
 
   if (!inputPath) {
     throw new Error(`Input path is missing. See \`x- --help\` for usage instructions`);
   }
 
-  const outputPath = args['--output'] || 'public';
-
-  let inputPathIsDirectory;
-
-  try {
-    inputPathIsDirectory = (await fs.stat(inputPath)).isDirectory();
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      throw new Error(`Could not find "${inputPath}"`);
-    } else {
-      throw new Error(`Failed to read "${inputPath}"`);
-    }
-  }
-
-  const outputPathIsDirectory = path.extname(outputPath) === '';
-
-  let entries: string[][];
-
-  if (inputPathIsDirectory) {
-    entries = await getEntries(inputPath, outputPath);
-  } else {
-    entries = [
-      [
-        inputPath,
-        outputPathIsDirectory ? path.join(outputPath, path.basename(inputPath)) : outputPath 
-      ]
-    ];
-  }
+  const entries = (await fs.stat(inputPath)).isDirectory()
+    ? await getEntries(inputPath, outputPath)
+    : [[inputPath, path.extname(outputPath) === '' ? path.join(outputPath, path.basename(inputPath)) : outputPath]];
 
   for (const [entryInputPath, entryOutputPath] of entries) {
     const startTime = performance.now();
 
     const html = await render(entryInputPath);
 
-    try {
-      await fs.mkdir(path.dirname(entryOutputPath), { recursive: true });
-    } catch {
-      throw new Error('Failed to create output directory');
-    }
-  
-    try {
-      await fs.writeFile(entryOutputPath, html, 'utf-8');
-    } catch {
-      throw new Error(`Failed to write "${entryOutputPath}"`);
-    }
+    await fs.mkdir(path.dirname(entryOutputPath), { recursive: true });
+    await fs.writeFile(entryOutputPath, html, 'utf-8');
 
     const renderTime = (performance.now() - startTime).toFixed(2);
     console.log(`${entryInputPath} \x1b[1;32m→\x1b[0m ${entryOutputPath} \x1b[2m(${renderTime}ms)\x1b[22m`);
