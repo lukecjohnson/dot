@@ -27,6 +27,7 @@
   "dependencies": {
     "arg": "^5.0.0",
     "js-beautify": "^1.13.4",
-    "markdown-wasm": "^1.1.2"
+    "markdown-wasm": "^1.1.2",
+    "node-html-parser": "^2.0.2"
   }
 }

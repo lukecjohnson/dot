@@ -1,121 +1,75 @@
 import * as path from 'path';
 import { promises as fs } from 'fs';
 
-import { parse as md } from 'markdown-wasm';
+import { parse as parseHTML, HTMLElement } from 'node-html-parser';
+import { parse as parseMarkdown } from 'markdown-wasm';
 import { html as formatHTML } from 'js-beautify';
 
-function normalizeWhitespace(html: string): string {
-  return html.replace(/^\s+|\s+$/g, '');
+function replace(node: HTMLElement, html: string): void {
+  node.insertAdjacentHTML('afterend', html);
+  node.remove();
 }
 
-function stripComments(html: string): string {
-  return html.replace(/<!--.*?-->/gms, '');
-}
+async function renderComponents(root: HTMLElement, filePath: string): Promise<HTMLElement> {
+  for (const node of root.querySelectorAll('x-component')) {
+    const src = node.getAttribute('src');
 
-function parseComponentProps(props: string): { key: string; value: string }[] {
-  return [...props.matchAll(/([a-z][a-z0-9-]*)="([^"]*)"/gm)]
-    .map((prop) => {
-      return {
-        key: prop[1],
-        value: normalizeWhitespace(prop[2])
-      };
-    });
-}
-
-async function renderComponents(html: string, filePath: string): Promise<string> {
-  const componentPattern = /<x-component\s+src="([a-z-_.\/]*)"((?:\s+[a-z][a-z0-9-]*="[^"]*")*)\s*(?:\/>|>(?!.*<x-component)(.*?)<\/x-component>)/gms;
-
-  for (const component of html.matchAll(componentPattern)) {
-    const [element, src, props, content] = component;
+    if (!src) continue;
 
     const componentPath = path.resolve(path.dirname(filePath), path.extname(src) ? src : `${src}.html`);
 
-    let componentHTML: string;
+    let html = await fs.readFile(componentPath, { encoding: 'utf-8' });
 
-    try {
-      componentHTML = await fs.readFile(componentPath, { encoding: 'utf-8' });
-    } catch(error) {
-      if (error.code === 'ENOENT') {
-        throw new Error(`Could not resolve "${src}" - please ensure "${componentPath}" exists`);
-      } else {
-        throw new Error(`Failed to read "${componentPath}"`);
+    for (const [key, value] of Object.entries(node.attributes)) {
+      if (key !== 'src') {
+        html = html.replace(new RegExp(`{{\\s?${key}\\s?}}`, 'g'), value);
       }
     }
 
-    componentHTML = stripComments(componentHTML);
+    let component = parseHTML(html);
 
-    for (const prop of parseComponentProps(props)) {
-      componentHTML = componentHTML.replace(new RegExp(`{{\\s?${prop.key}\\s?}}`, 'g'), prop.value);
+    const slot = component.querySelector('x-slot');
+
+    if (slot) {
+      replace(slot, node.innerHTML);
     }
 
-    for (const slot of componentHTML.matchAll(/<x-slot(?:\s*\/>|>(.*?)<\/x-slot>)/gms)) {
-      const [slotElement, fallbackContent] = slot;
-      componentHTML = componentHTML.replace(slotElement, content 
-        ? normalizeWhitespace(content) 
-        : normalizeWhitespace(fallbackContent)
-      );
-    }
+    component = await renderComponents(component, componentPath);
+    component = await renderContent(component, componentPath);
 
-    componentHTML = await renderContent(componentHTML, componentPath);
-    componentHTML = await renderComponents(componentHTML, componentPath);
-
-    html = html.replace(element, normalizeWhitespace(componentHTML));
+    replace(node, component.outerHTML);
   }
 
-  if (componentPattern.test(html)) {
-    html = await renderComponents(html, filePath);
-  }
-
-  return html;
+  return root;
 }
 
-async function renderContent(html: string, filePath: string): Promise<string> {
-  for (const content of html.matchAll(/<x-content\s+src="([a-z-_.\/]+)"(?:\s*\/>|>\s*<\/x-content>)/gm)) {
-    const [element, src] = content;
+async function renderContent(root: HTMLElement, filePath: string): Promise<HTMLElement> {
+  for (const node of root.querySelectorAll('x-content')) {
+    const src = node.getAttribute('src');
 
-    const contentPath = path.resolve(path.dirname(filePath), path.extname(src) ? src : `${src}.md`);
+    if (!src) continue;
 
-    let markdown: string;
+    const markdownPath = path.resolve(path.dirname(filePath), path.extname(src) ? src : `${src}.md`);
 
-    try {
-      markdown = await fs.readFile(contentPath, { encoding: 'utf-8' });
-    } catch(error) {
-      if (error.code === 'ENOENT') {
-        throw new Error(`Could not resolve "${src}" - please ensure "${contentPath}" exists`);
-      } else {
-        throw new Error(`Failed to read "${contentPath}"`);
-      }
-    }
+    const markdown = await fs.readFile(markdownPath, { encoding: 'utf-8' });
 
-    html = html.replace(element, md(markdown));
+    replace(node, parseMarkdown(markdown));
   }
 
-  return html;
+  return root;
 }
 
 export async function render(filePath: string): Promise<string> {
-  let html: string;
+  const html = await fs.readFile(filePath, { encoding: 'utf-8' });
 
-  try {
-    html = await fs.readFile(filePath, { encoding: 'utf-8' });
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      throw new Error(`Could not find "${filePath}"`);
-    } else {
-      throw new Error(`Failed to read "${filePath}"`);
-    }
-  }
+  let root = parseHTML(html);
 
-  html = stripComments(html);
+  root = await renderContent(root, filePath);
+  root = await renderComponents(root, filePath);
 
-  html = await renderContent(html, filePath);
-  html = await renderComponents(html, filePath);
-
-  html = formatHTML(html, {
-    indent_size: 2, 
+  return formatHTML(root.outerHTML, {
+    indent_size: 2,
     preserve_newlines: false,
     wrap_line_length: 120
   });
-
-  return html;
 }
