@@ -2,7 +2,7 @@ import * as path from 'path';
 import { promises as fs } from 'fs';
 
 import { parse as parseHTML, HTMLElement } from 'node-html-parser';
-import { parse as parseMarkdown } from 'markdown-wasm';
+import * as parseMarkdown from 'marked';
 import { html as formatHTML } from 'js-beautify';
 
 function replace(node: HTMLElement, html: string): void {
