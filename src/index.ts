@@ -41,7 +41,7 @@ async function renderComponents(
     const slot = component.querySelector('x-slot');
 
     if (slot) {
-      replace(slot, node.innerHTML);
+      replace(slot, node.removeWhitespace().innerHTML ? node.innerHTML : slot.innerHTML);
     }
 
     component = await renderComponents(component, componentPath, componentsAlias, contentAlias);
