@@ -11,7 +11,11 @@ Usage: x- <input> [options]
 
 Options:
 
-  -o, --output        Output path (Default: ./public)
+  --content           Path used as \`@content\` alias (Default: \`./src/content\`)
+
+  --components        Path used as \`@components\` alias (Default: \`./src/components\`)
+
+  -o, --output        Output path (Default: \`./public\`)
 
   -v, --version       Prints the current version
 `;
@@ -39,6 +43,9 @@ async function getEntries(inputPath: string, outputPath: string): Promise<string
 
 async function main(): Promise<void> {
   const args = arg({
+    '--content': String,
+    '--components': String,
+
     '--output': String,
     '-o': '--output',
 
@@ -73,7 +80,10 @@ async function main(): Promise<void> {
   for (const [entryInputPath, entryOutputPath] of entries) {
     const startTime = performance.now();
 
-    const html = await render(entryInputPath);
+    const html = await render(entryInputPath, {
+      ...(args['--content'] ? { contentAlias: args['--content'] } : {}),
+      ...(args['--components'] ? { componentsAlias: args['--components'] } : {})
+    });
 
     await fs.mkdir(path.dirname(entryOutputPath), { recursive: true });
     await fs.writeFile(entryOutputPath, html, 'utf-8');
