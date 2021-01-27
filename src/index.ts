@@ -38,10 +38,15 @@ async function renderComponents(
 
     let component = parseHTML(html);
 
-    const slot = component.querySelector('x-slot');
+    for (const slot of component.querySelectorAll('x-slot')) {
+      const name = slot.getAttribute('name');
 
-    if (slot) {
-      replace(slot, node.removeWhitespace().innerHTML ? node.innerHTML : slot.innerHTML);
+      if (name) {
+        const template = node.querySelector(`x-template[slot="${name}"]`);
+        replace(slot, template?.removeWhitespace().innerHTML ? template.innerHTML : slot.innerHTML);
+      } else {
+        replace(slot, node.removeWhitespace().innerHTML ? node.innerHTML : slot.innerHTML);
+      }
     }
 
     component = await renderComponents(component, componentPath, componentsAlias, contentAlias);
