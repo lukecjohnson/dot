@@ -10,7 +10,9 @@
   "bin": {
     "x-": "dist/cli.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "start": "tsc --watch",
     "build": "tsc"
@@ -23,8 +25,8 @@
   },
   "dependencies": {
     "arg": "^5.0.0",
-    "js-beautify": "^1.13.4",
-    "marked": "^1.2.7",
+    "js-beautify": "^1.13.5",
+    "marked": "^1.2.8",
     "node-html-parser": "^2.0.2"
   }
 }
